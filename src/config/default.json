@@ -4,6 +4,7 @@
     "model": "deepseek-chat"
   },
   "logging": {
-    "level": "info"
-  }
+    "level": "debug"
+  },
+  "historyDir": "history"
 }
