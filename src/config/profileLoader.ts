@@ -5,6 +5,7 @@ import { ApprovalPolicy } from '../core/approvals/approvalsPolicy';
 import { SandboxConfig } from '../core/sandbox/types';
 
 export interface HeadlessExecConfig {
+  provider: string;
   model: string;
   historyDir: string;
   sandbox: SandboxConfig;

@@ -9,11 +9,6 @@ export interface LoggingConfig {
   level: string;
 }
 
-export interface ApiConfig {
-  baseUrl: string;
-  model: string;
-}
-
 export interface ApprovalsConfig {
   policy: ApprovalPolicy;
 }
@@ -24,9 +19,10 @@ export interface ExecConfig {
 }
 
 export interface AppConfig {
-  api: ApiConfig;
-  logging: LoggingConfig;
+  provider: string;
+  model: string;
   historyDir: string;
+  logging: LoggingConfig;
   sandbox: SandboxConfig;
   approvals: ApprovalsConfig;
   exec: ExecConfig;
@@ -72,6 +68,14 @@ function applyEnvOverrides(config: AppConfig): AppConfig {
   const sandboxMode = process.env.DEEPSEEK_SANDBOX_MODE as SandboxMode | undefined;
   if (sandboxMode) {
     result.sandbox = { ...result.sandbox, mode: sandboxMode };
+  }
+  const providerId = process.env.DEEPSEEK_PROVIDER;
+  if (providerId) {
+    result.provider = providerId;
+  }
+  const modelId = process.env.DEEPSEEK_MODEL;
+  if (modelId) {
+    result.model = modelId;
   }
   const approvalsPolicy = process.env.DEEPSEEK_APPROVALS_POLICY as ApprovalPolicy | undefined;
   if (approvalsPolicy) {
@@ -121,7 +125,9 @@ export function updateConfig(partial: Partial<AppConfig>) {
 
 export const getConfig = (): AppConfig => loadConfig();
 
-export const getApiConfig = (): ApiConfig => loadConfig().api;
+export const getProviderId = (): string => loadConfig().provider;
+
+export const getModelId = (): string => loadConfig().model;
 
 export const getLoggingConfig = (): LoggingConfig => loadConfig().logging;
 

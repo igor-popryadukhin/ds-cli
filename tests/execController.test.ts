@@ -8,7 +8,7 @@ import { ExecController } from '../src/controllers/execController';
 import type { HeadlessExecConfig } from '../src/config/profileLoader';
 import { SessionFsRepository } from '../src/core/repository/sessionFsRepository';
 import type { EventPayload, EventSink } from '../src/core/services/eventBus';
-import type { DeepSeekClient } from '../src/api/deepseekClient';
+import type { ProviderClient } from '../src/providers/types';
 
 class MemorySink implements EventSink {
   public readonly events: EventPayload[] = [];
@@ -20,6 +20,7 @@ class MemorySink implements EventSink {
 
 function createConfig(): HeadlessExecConfig {
   return {
+    provider: 'deepseek',
     model: 'deepseek-chat',
     historyDir: 'history',
     sandbox: {
@@ -58,7 +59,7 @@ describe('ExecController', () => {
         content: JSON.stringify({ ok: true }),
         usage: { completion_tokens: 10 },
       }),
-    } as unknown as DeepSeekClient;
+    } as unknown as ProviderClient;
 
     const controller = new ExecController(client, repo, sink, {
       sessionId: 'session-test',
@@ -79,7 +80,10 @@ describe('ExecController', () => {
 
     expect(result.text).toBe(JSON.stringify({ ok: true }));
     expect(result.validation?.valid).toBe(true);
-    expect(client.chat).toHaveBeenCalled();
+    expect(client.chat).toHaveBeenCalledWith(expect.any(Array), expect.objectContaining({
+      model: 'deepseek-chat',
+      jsonMode: true,
+    }));
 
     const snapshot = await repo.readSnapshot('session-test');
     expect(snapshot?.messages).toHaveLength(2);
@@ -96,7 +100,7 @@ describe('ExecController', () => {
       chat: jest.fn().mockResolvedValue({
         content: 'not-json',
       }),
-    } as unknown as DeepSeekClient;
+    } as unknown as ProviderClient;
 
     const controller = new ExecController(client, repo, sink, {
       sessionId: 'session-invalid',

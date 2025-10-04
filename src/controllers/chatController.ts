@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { DeepSeekClient, ChatMessage } from '../api/deepseekClient';
+import { ChatMessage, ProviderClient } from '../providers/types';
 import { Message } from '../core/models/message';
 import { Session } from '../core/models/session';
 import { SessionFsRepository } from '../core/repository/sessionFsRepository';
@@ -36,7 +36,7 @@ function toChatMessages(messages: Message[]): ChatMessage[] {
 
 export class ChatController {
   constructor(
-    private readonly client: DeepSeekClient,
+    private readonly client: ProviderClient,
     private readonly repo: SessionFsRepository,
     private readonly cwd: string,
     private readonly model: string,
@@ -99,7 +99,7 @@ export class ChatController {
     logger.debug({ sessionId: session.id, userMessageId: user.id }, 'Sending message to DeepSeek');
 
     try {
-      const { content } = await this.client.chat(toChatMessages(session.messages));
+      const { content } = await this.client.chat(toChatMessages(session.messages), { model: this.model });
       const now = Date.now();
       const assistant: Message = {
         id: randomUUID(),
