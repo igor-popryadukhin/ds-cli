@@ -1,0 +1,14 @@
+{
+  "sandbox": {
+    "mode": "workspace-write",
+    "workspaceRoot": ".",
+    "allowDeepSeekOnly": true
+  },
+  "approvals": {
+    "policy": "never"
+  },
+  "exec": {
+    "timeoutMs": 600000,
+    "envWhitelist": ["PATH", "HOME", "CI", "GIT_COMMIT"]
+  }
+}

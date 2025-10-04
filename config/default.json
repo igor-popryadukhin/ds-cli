@@ -1,0 +1,16 @@
+{
+  "model": "deepseek-chat",
+  "historyDir": "history",
+  "sandbox": {
+    "mode": "read-only",
+    "workspaceRoot": ".",
+    "allowDeepSeekOnly": true
+  },
+  "approvals": {
+    "policy": "untrusted"
+  },
+  "exec": {
+    "timeoutMs": 120000,
+    "envWhitelist": ["PATH", "HOME", "TMPDIR"]
+  }
+}
