@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ValidateFunction } from 'ajv';
 
-import { DeepSeekClient, ChatMessage, ChatResult } from '../api/deepseekClient';
+import { ProviderClient, ChatMessage, ChatResult } from '../providers/types';
 import { SessionFsRepository } from '../core/repository/sessionFsRepository';
 import { loadAgentsDoc } from '../core/services/agentsDocLoader';
 import { EventPayload, EventSink } from '../core/services/eventBus';
@@ -95,7 +95,7 @@ export class ExecController {
   private readonly agentsLoader: typeof loadAgentsDoc;
 
   constructor(
-    private readonly client: DeepSeekClient,
+    private readonly client: ProviderClient,
     private readonly repository: SessionFsRepository,
     private readonly sink: EventSink,
     private readonly options: ExecControllerOptions,
@@ -142,7 +142,10 @@ export class ExecController {
     const startedAt = Date.now();
 
     try {
-      const result = await this.client.chat(messagesForModel, Boolean(schema));
+      const result = await this.client.chat(messagesForModel, {
+        model: this.options.config.model,
+        jsonMode: Boolean(schema),
+      });
       const assistantMessage = this.createAssistantMessage(result.content);
 
       if (stream) {

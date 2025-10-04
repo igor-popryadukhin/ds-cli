@@ -5,7 +5,6 @@ import { randomUUID } from 'node:crypto';
 import Ajv, { type ValidateFunction } from 'ajv';
 import { Command } from 'commander';
 
-import { DeepSeekClient } from '../../api/deepseekClient';
 import { ExecController } from '../../controllers/execController';
 import {
   EventSink,
@@ -20,6 +19,9 @@ import {
   PartialHeadlessConfig,
   resolveHeadlessConfig,
 } from '../../config/profileLoader';
+import { createProviderClient } from '../../providers/clientFactory';
+import { getProvider } from '../../providers/registry';
+import { MissingApiKeyError } from '../../providers/types';
 
 const SANDBOX_MODES = ['read-only', 'workspace-write', 'danger-full-access'] as const;
 const APPROVAL_POLICIES = ['untrusted', 'on-failure', 'on-request', 'never'] as const;
@@ -212,11 +214,22 @@ export const execCommand = new Command('exec')
       const { sessionId, snapshot } = await resolveSession(repo, options);
       sink = createEventSink(repo, sessionId, options);
 
-      const apiKey = process.env.DEEPSEEK_API_KEY;
-      if (!apiKey) {
-        throw new Error('DEEPSEEK_API_KEY is not configured');
+      const provider = getProvider(config.provider);
+      if (!provider) {
+        throw new Error(`Provider "${config.provider}" is not configured. Update config/providers.json.`);
       }
-      const client = new DeepSeekClient(apiKey, process.env.DEEPSEEK_BASE_URL, config.model);
+
+      let client;
+      try {
+        client = createProviderClient(provider);
+      } catch (error) {
+        if (error instanceof MissingApiKeyError) {
+          console.error(`Missing API key: set ${error.envKey} for provider ${error.providerId}.`);
+          process.exitCode = 11;
+          return;
+        }
+        throw error;
+      }
       const controller = new ExecController(client, repo, sink, {
         sessionId,
         config,

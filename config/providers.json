@@ -1,0 +1,10 @@
+{
+  "providers": {
+    "deepseek": {
+      "baseUrl": "https://api.deepseek.com",
+      "envKey": "DEEPSEEK_API_KEY",
+      "wireApi": "chat",
+      "defaultModel": "deepseek-chat"
+    }
+  }
+}

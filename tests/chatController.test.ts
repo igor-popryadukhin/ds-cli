@@ -1,5 +1,5 @@
 import { ChatController } from '../src/controllers/chatController';
-import { DeepSeekClient } from '../src/api/deepseekClient';
+import type { ProviderClient } from '../src/providers/types';
 import { SessionFsRepository } from '../src/core/repository/sessionFsRepository';
 import { EventBus, StatusEvent } from '../src/core/services/eventBus';
 
@@ -37,7 +37,7 @@ describe('ChatController', () => {
 
   it('starts a session with system prompt from agents loader', async () => {
     const controller = new ChatController(
-      client as unknown as DeepSeekClient,
+      client as unknown as ProviderClient,
       repo as unknown as SessionFsRepository,
       '/tmp/project',
       'deepseek-chat',
@@ -57,7 +57,7 @@ describe('ChatController', () => {
     client.chat.mockResolvedValue({ content: 'Hello from DeepSeek' });
 
     const controller = new ChatController(
-      client as unknown as DeepSeekClient,
+      client as unknown as ProviderClient,
       repo as unknown as SessionFsRepository,
       '/tmp/project',
       'deepseek-chat',
@@ -81,6 +81,7 @@ describe('ChatController', () => {
       expect.arrayContaining([
         expect.objectContaining({ role: 'user', content: 'Hi there' }),
       ]),
+      expect.objectContaining({ model: 'deepseek-chat' }),
     );
 
     expect(repo.append).toHaveBeenNthCalledWith(1, session.id, expect.objectContaining({ type: 'item.user' }));

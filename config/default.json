@@ -1,6 +1,10 @@
 {
+  "provider": "deepseek",
   "model": "deepseek-chat",
   "historyDir": "history",
+  "logging": {
+    "level": "info"
+  },
   "sandbox": {
     "mode": "read-only",
     "workspaceRoot": ".",
