@@ -1,73 +1,36 @@
-import axios, { AxiosInstance } from 'axios';
+import { Configuration, OpenAIApi } from 'openai';
 
-import { getApiConfig } from '../config';
-
-export type DeepSeekRole = 'system' | 'user' | 'assistant';
-
-export interface DeepSeekMessage {
-  role: DeepSeekRole;
+export type ChatMessage = {
+  role: 'system' | 'user' | 'assistant';
   content: string;
-}
+};
 
-export interface DeepSeekResponse {
+export interface ChatResult {
   content: string;
-  tokensUsed: number;
-}
-
-interface DeepSeekApiChoice {
-  message: {
-    content: string;
+  usage?: {
+    prompt_tokens?: number | null;
+    completion_tokens?: number | null;
+    total_tokens?: number | null;
   };
 }
 
-interface DeepSeekApiUsage {
-  total_tokens: number;
-}
-
-interface DeepSeekApiResponse {
-  choices: DeepSeekApiChoice[];
-  usage?: DeepSeekApiUsage;
-}
-
 export class DeepSeekClient {
-  private readonly httpClient: AxiosInstance;
+  private readonly api: OpenAIApi;
 
-  private readonly modelName: string;
-
-  constructor(
-    private readonly apiKey: string,
-    model?: string,
-  ) {
-    const apiConfig = getApiConfig();
-    this.modelName = model ?? apiConfig.model;
-
-    this.httpClient = axios.create({
-      baseURL: apiConfig.baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
+  constructor(apiKey: string, baseURL = 'https://api.deepseek.com', private readonly model = 'deepseek-chat') {
+    this.api = new OpenAIApi(new Configuration({ apiKey, basePath: baseURL }));
   }
 
-  async send(messages: DeepSeekMessage[]): Promise<DeepSeekResponse> {
-    const response = await this.httpClient.post<DeepSeekApiResponse>('/chat/completions', {
-      model: this.modelName,
+  async chat(messages: ChatMessage[], jsonMode = false): Promise<ChatResult> {
+    const res = await this.api.createChatCompletion({
+      model: this.model,
       messages,
-      response_format: { type: 'json_object' },
+      ...(jsonMode && { response_format: { type: 'json_object' } }),
     });
-
-    const data = response.data;
-
-    const content = data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error('Invalid response from DeepSeek API');
-    }
-
+    const msg = res.data.choices[0].message;
     return {
-      content,
-      tokensUsed: data.usage?.total_tokens ?? 0,
+      content: msg?.content ?? '',
+      usage: res.data.usage ?? undefined,
     };
   }
 }
