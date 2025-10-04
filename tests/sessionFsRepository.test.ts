@@ -47,10 +47,17 @@ describe('SessionFsRepository', () => {
     expect(snapshot).toEqual(session);
   });
 
-  it('returns the last session id', async () => {
+  it('returns the last session id using snapshot mtime', async () => {
     const repo = new SessionFsRepository(dir);
     await repo.saveSnapshot(createSession('001'));
     await repo.saveSnapshot(createSession('002'));
+
+    const firstPath = path.join(dir, '001.snapshot.json');
+    const secondPath = path.join(dir, '002.snapshot.json');
+
+    const older = Date.now() - 10_000;
+    await fs.utimes(firstPath, older / 1000, older / 1000);
+    await fs.utimes(secondPath, Date.now() / 1000, Date.now() / 1000);
 
     const lastId = await repo.lastSessionId();
     expect(lastId).toBe('002');

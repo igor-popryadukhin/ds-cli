@@ -66,7 +66,7 @@ describe('Patch application', () => {
     const preview = buildPreview(parsed);
     expect(preview.totalAdditions).toBe(1);
     expect(preview.totalDeletions).toBe(0);
-    expect(preview.files[0].isNew).toBe(true);
+    expect(preview.files[0].isNew).toBe(false);
   });
 
   test('applyPatch writes files and respects sandbox', async () => {

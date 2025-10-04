@@ -35,12 +35,30 @@ export class SessionFsRepository {
 
   async lastSessionId(): Promise<string | null> {
     try {
-      const files = (await fs.readdir(this.baseDir)).filter((f) => f.endsWith('.snapshot.json'));
-      if (!files.length) {
+      const entries = (await fs.readdir(this.baseDir))
+        .filter((file) => file.endsWith('.snapshot.json'))
+        .map((file) => ({
+          id: file.replace('.snapshot.json', ''),
+          path: path.join(this.baseDir, file),
+        }));
+
+      if (!entries.length) {
         return null;
       }
-      files.sort((a, b) => a.localeCompare(b));
-      return files.pop()!.replace('.snapshot.json', '');
+
+      let latest: { id: string; mtimeMs: number } | null = null;
+      for (const entry of entries) {
+        try {
+          const stat = await fs.stat(entry.path);
+          if (!latest || stat.mtimeMs > latest.mtimeMs) {
+            latest = { id: entry.id, mtimeMs: stat.mtimeMs };
+          }
+        } catch {
+          // ignore files that cannot be stat'ed
+        }
+      }
+
+      return latest?.id ?? null;
     } catch {
       return null;
     }
