@@ -10,11 +10,24 @@ export interface StatusEvent {
   message?: string;
 }
 
+export interface AgentPatchSuggestedEvent {
+  diff: string;
+  reason?: string;
+}
+
+export interface AgentExecSuggestedEvent {
+  command: string;
+  cwd?: string;
+  reason?: string;
+}
+
 export type ChatEventMap = {
   status: StatusEvent;
   session: Session;
   message: Message;
   error: { error: Error };
+  'agent.patch.suggested': AgentPatchSuggestedEvent;
+  'agent.exec.suggested': AgentExecSuggestedEvent;
 };
 
 type Listener<T> = (payload: T) => void;

@@ -6,5 +6,18 @@
   "logging": {
     "level": "debug"
   },
-  "historyDir": "history"
+  "historyDir": "history",
+  "sandbox": {
+    "mode": "read-only",
+    "workspaceRoot": ".",
+    "writableRoots": ["./tmp"],
+    "allowDeepSeekOnly": true
+  },
+  "approvals": {
+    "policy": "untrusted"
+  },
+  "exec": {
+    "timeoutMs": 120000,
+    "envWhitelist": ["PATH", "HOME", "SHELL", "TMPDIR"]
+  }
 }
